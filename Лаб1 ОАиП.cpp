@@ -5,9 +5,9 @@ int main()
 	setlocale(LC_ALL, "RU");
 	const int size = 10;
 	int a[size];
-	cout << "Ââåäèòå 10 öåëûõ ÷èñåë:" << endl;
+	cout << "Ã‚Ã¢Ã¥Ã¤Ã¨Ã²Ã¥ 10 Ã¶Ã¥Ã«Ã»Ãµ Ã·Ã¨Ã±Ã¥Ã«:" << endl;
 	for (int i = 0; i < size; i++) {
-		cout << "Ââåäèòå ÷èñëî:" << i << ":";
+		cout << "Ã‚Ã¢Ã¥Ã¤Ã¨Ã²Ã¥ Ã·Ã¨Ã±Ã«Ã®:" << i << ":";
 		cin >> a[i];
 	}
 	for (int i = 0; i < size; i++) {
@@ -20,8 +20,8 @@ int main()
 		if (max < a[i])
 			max = a[i];
 	}
-	cout << "Ñóììà âñåõ ýëåìåíòîâ:" << sum << endl;
-	cout << "Ìàêñèìàëüíûé ýëåìåíò:" << max << endl;
+	cout << "Ã‘Ã³Ã¬Ã¬Ã  Ã¢Ã±Ã¥Ãµ Ã½Ã«Ã¥Ã¬Ã¥Ã­Ã²Ã®Ã¢:" << sum << endl;
+	cout << "ÃŒÃ ÃªÃ±Ã¨Ã¬Ã Ã«Ã¼Ã­Ã»Ã© Ã½Ã«Ã¥Ã¬Ã¥Ã­Ã²:" << max << endl;
 	
 	void bubbleSort(int a[], int size); {
 		for (int i = 0; i < size - 1; i++) {
