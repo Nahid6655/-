@@ -14,7 +14,7 @@ int main()
 		cout << a[i] << " ";
 	}
 	int sum = 0;
-	int max = 0;
+	int max = a[0];
 	for (int i = 0;i < size;i++) {
 		sum += a[i];
 		if (max < a[i])
@@ -37,4 +37,5 @@ int main()
 	}
 	return 0;
 }
+
 
