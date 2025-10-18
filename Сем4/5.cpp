@@ -1,34 +1,63 @@
-n, m = map(int, input().split())
-matrix = [list(map(int, input().split())) for _ in range(n)]
+#include <iostream>
+#include <vector>
 
-result = []
+using namespace std;
 
-top = 0
-bottom = n - 1
-left = 0
-right = m - 1
-
-while top <= bottom and left <= right:
-    # Верхняя строка слева направо
-    for i in range(left, right + 1):
-        result.append(matrix[top][i])
-    top += 1
+int main() {
+    int n, m;
+    cin >> n >> m;
     
-    # Правый столбец сверху вниз
-    for i in range(top, bottom + 1):
-        result.append(matrix[i][right])
-    right -= 1
+    vector<vector<int>> matrix(n, vector<int>(m));
     
-    # Нижняя строка справа налево (если есть)
-    if top <= bottom:
-        for i in range(right, left - 1, -1):
-            result.append(matrix[bottom][i])
-        bottom -= 1
+    // Чтение матрицы
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            cin >> matrix[i][j];
+        }
+    }
     
-    # Левый столбец снизу вверх (если есть)
-    if left <= right:
-        for i in range(bottom, top - 1, -1):
-            result.append(matrix[i][left])
-        left += 1
-
-print(' '.join(map(str, result)))
+    vector<int> result;
+    int top = 0, bottom = n - 1;
+    int left = 0, right = m - 1;
+    
+    while (top <= bottom && left <= right) {
+        // Верхняя строка слева направо
+        for (int i = left; i <= right; i++) {
+            result.push_back(matrix[top][i]);
+        }
+        top++;
+        
+        // Правый столбец сверху вниз
+        for (int i = top; i <= bottom; i++) {
+            result.push_back(matrix[i][right]);
+        }
+        right--;
+        
+        // Нижняя строка справа налево (если есть)
+        if (top <= bottom) {
+            for (int i = right; i >= left; i--) {
+                result.push_back(matrix[bottom][i]);
+            }
+            bottom--;
+        }
+        
+        // Левый столбец снизу вверх (если есть)
+        if (left <= right) {
+            for (int i = bottom; i >= top; i--) {
+                result.push_back(matrix[i][left]);
+            }
+            left++;
+        }
+    }
+    
+    // Вывод результата
+    for (int i = 0; i < result.size(); i++) {
+        cout << result[i];
+        if (i < result.size() - 1) {
+            cout << " ";
+        }
+    }
+    cout << endl;
+    
+    return 0;
+}
