@@ -1,45 +1,80 @@
 #include <iostream>
-#include <iomanip>
+#include <climits>
 using namespace std;
 
 int main() {
-    int N;
-    cin >> N;
+    setlocale(LC_ALL, "RU");
     
-    int matrix[100][100] = {0};
-    
-    // Направления: вправо, вниз, влево, вверх
-    int directions[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-    int currentDirection = 0; // начинаем движение вправо
-    
-    int row = 0, col = 0; // начальная позиция
-    int num = 1; // начинаем с 1
-    
-    while (num <= N * N) {
-        matrix[row][col] = num++;
-        
-        // Пробуем двигаться в текущем направлении
-        int nextRow = row + directions[currentDirection][0];
-        int nextCol = col + directions[currentDirection][1];
-        
-        // Если вышли за границы или клетка уже заполнена, меняем направление
-        if (nextRow < 0 || nextRow >= N || nextCol < 0 || nextCol >= N || matrix[nextRow][nextCol] != 0) {
-            currentDirection = (currentDirection + 1) % 4;
-            nextRow = row + directions[currentDirection][0];
-            nextCol = col + directions[currentDirection][1];
-        }
-        
-        row = nextRow;
-        col = nextCol;
-    }
-    
-    // Вывод матрицы
+    cout << "Введите количество строк, а затем количество столбцов: ";
+    int N, M, matrix[100][100];
+    cin >> N >> M;
+
+    // Ввод элементов матрицы
+    cout << "Введите элементы матрицы:" << endl;
     for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            cout << setw(3) << matrix[i][j] << " ";
+        for (int j = 0; j < M; j++) {
+            cin >> matrix[i][j];
+        }
+    }
+
+    // Вывод матрицы
+    cout << "Матрица:" << endl;
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            cout << matrix[i][j] << " ";
         }
         cout << endl;
     }
+
+    // Предварительное вычисление min/max для строк и столбцов
+    int rowMin[100], rowMax[100];
+    int colMin[100], colMax[100];
     
+    // Инициализация
+    for (int i = 0; i < N; i++) {
+        rowMin[i] = INT_MAX;
+        rowMax[i] = INT_MIN;
+    }
+    for (int j = 0; j < M; j++) {
+        colMin[j] = INT_MAX;
+        colMax[j] = INT_MIN;
+    }
+    
+    // Вычисление min/max за один проход
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            int val = matrix[i][j];
+            if (val < rowMin[i]) rowMin[i] = val;
+            if (val > rowMax[i]) rowMax[i] = val;
+            if (val < colMin[j]) colMin[j] = val;
+            if (val > colMax[j]) colMax[j] = val;
+        }
+    }
+
+    // Поиск седловых точек
+    int count = 0;
+    
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            int v = matrix[i][j];
+            
+            // Тип A: минимален в строке и максимален в столбце
+            if (v == rowMin[i] && v == colMax[j]) {
+                cout << "A " << v << " " << i + 1 << " " << j + 1 << endl;
+                count++;
+            }
+            
+            // Тип B: максимален в строке и минимален в столбце
+            if (v == rowMax[i] && v == colMin[j]) {
+                cout << "B " << v << " " << i + 1 << " " << j + 1 << endl;
+                count++;
+            }
+        }
+    }
+
+    if (count == 0) {
+        cout << "NONE" << endl;
+    }
+
     return 0;
 }
