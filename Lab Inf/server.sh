@@ -1,10 +1,11 @@
 #!/bin/bash
-port=12345
-echo "TCP-server is start on $port"
-while true; do
-nc -l -p $port | while read line; do
-echo "Client: $line"
-echo "OK: $line" | nc localhost $port 
-done
-sleep 1
+
+echo "Запуск сервера на порту 12345..."
+echo "Для остановки сервера нажмите Ctrl+C"
+
+# Запускаем netcat в режиме сервера
+nc -l -p 12345 | while read message; do
+    echo "Получено сообщение: $message"
+    # Отправляем подтверждение клиенту
+    echo "Сообщение получено сервером" | nc localhost 12346
 done
