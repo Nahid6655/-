@@ -1,9 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <string>
 #include <algorithm>
-#include <windows.h>
+#include <string>
 
 using namespace std;
 
@@ -13,217 +12,226 @@ struct Dish {
     double price;
 };
 
-// --- Парсинг строки ---
-Dish parseDish(const string& line) {
+// ------------------------------------------------------------
+// Функция чтения меню из файла
+// ------------------------------------------------------------
+vector<Dish> readMenu(const string& filename) {
+    ifstream in(filename);
+    vector<Dish> dishes;
     Dish d;
-    size_t p1 = line.find(';');
-    size_t p2 = line.find(';', p1 + 1);
 
-    d.name  = line.substr(0, p1);
-    d.type  = line.substr(p1 + 1, p2 - p1 - 1);
-    d.price = stod(line.substr(p2 + 1));
-    return d;
-}
-
-// --- Преобразование блюда в строку ---
-string dishToString(const Dish& d) {
-    return d.name + ";" + d.type + ";" + to_string(d.price);
-}
-
-// --- Загрузка меню ---
-vector<Dish> loadMenu() {
-    ifstream file("menu.txt");
-    vector<Dish> menu;
-    string line;
-
-    while (getline(file, line)) {
-        if (!line.empty())
-            menu.push_back(parseDish(line));
+    while (getline(in, d.name)) {
+        getline(in, d.type);
+        in >> d.price;
+        in.ignore(); 
+        dishes.push_back(d);
     }
-    return menu;
+    return dishes;
 }
 
-// --- Сохранение меню ---
-void saveMenu(const vector<Dish>& menu) {
-    ofstream file("menu.txt");
-    for (auto& d : menu)
-        file << dishToString(d) << "\n";
+// ------------------------------------------------------------
+// Функция записи меню в файл
+// ------------------------------------------------------------
+void writeMenu(const string& filename, const vector<Dish>& dishes) {
+    ofstream out(filename);
+    for (const auto& d : dishes) {
+        out << d.name << "\n"
+            << d.type << "\n"
+            << d.price << "\n";
+    }
 }
 
-// --- Лог ---
-void logResult(const string& text) {
-    ofstream out("output.txt", ios::app);
-    out << text << "\n";
-}
+// ------------------------------------------------------------
+// 1. Создание файла и заполнение
+// ------------------------------------------------------------
+void createFile(const string& filename) {
+    ofstream out(filename);
 
-// === 1. Создание меню ===
-void createMenuFile() {
-    ofstream file("menu.txt");
-    cout << "Введите блюда (пустая строка завершит ввод).\n";
+    cout << "Введите данные о блюдах. Пустая строка в названии — конец ввода.\n\n";
 
     while (true) {
         Dish d;
-        cout << "Название: ";
+
+        cout << "Название блюда: ";
         getline(cin, d.name);
         if (d.name.empty()) break;
 
-        cout << "Тип (Закуски, Основные блюда, Десерты, Напитки, Для детей): ";
+        cout << "Тип (Закуски / Основные блюда / Десерты / Напитки / Для детей): ";
         getline(cin, d.type);
 
-        cout << "Цена: ";
+        cout << "Цена блюда: ";
         cin >> d.price;
         cin.ignore();
 
-        file << dishToString(d) << "\n";
-    }
+        out << d.name << "\n" << d.type << "\n" << d.price << "\n";
 
-    cout << "Файл menu.txt создан.\n";
-    logResult("Файл menu.txt создан и заполнен.");
+        cout << "Блюдо добавлено!\n\n";
+    }
+    cout << "Файл успешно создан и заполнен.\n";
 }
 
-// === 2. Поиск блюда ===
-void searchDish() {
-    cout << "Введите название блюда: ";
-    string name;
-    getline(cin, name);
+// ------------------------------------------------------------
+// 2. Поиск блюда по названию
+// ------------------------------------------------------------
+void searchDish(const string& filename, const string& outputFile) {
+    vector<Dish> dishes = readMenu(filename);
+    ofstream out(outputFile, ios::app);
 
-    vector<Dish> menu = loadMenu();
-    for (auto& d : menu) {
-        if (d.name == name) {
-            string out = "Найдено: " + dishToString(d);
-            cout << out << endl;
-            logResult(out);
+    string key;
+    cout << "Введите название блюда: ";
+    getline(cin, key);
+
+    for (const auto& d : dishes) {
+        if (d.name == key) {
+            cout << "Найдено блюдо:\n";
+            cout << "Название: " << d.name << "\nТип: " << d.type << "\nЦена: " << d.price << "\n";
+
+            out << "Найдено блюдо: " << d.name << " | " << d.type << " | " << d.price << "\n";
             return;
         }
     }
 
     cout << "Блюдо не найдено.\n";
-    logResult("Блюдо не найдено: " + name);
+    out << "Блюдо не найдено: " << key << "\n";
 }
 
-// === 3. Сортировка ===
-void sortMenu() {
-    cout << "Сортировать (1 — по типу, 2 — по цене): ";
-    int ch;
-    cin >> ch;
+// ------------------------------------------------------------
+// 3. Сортировка блюда
+// ------------------------------------------------------------
+void sortMenu(const string& filename, const string& outputFile) {
+    vector<Dish> dishes = readMenu(filename);
+
+    int choice;
+    cout << "Выберите вид сортировки:\n";
+    cout << "1 — по типу\n";
+    cout << "2 — по цене\n";
+    cout << "Ваш выбор: ";
+    cin >> choice;
     cin.ignore();
 
-    auto menu = loadMenu();
-
-    if (ch == 1) {
-        sort(menu.begin(), menu.end(), [](auto& a, auto& b){
-            return a.type < b.type;
-        });
-        logResult("Меню отсортировано по типу.");
+    if (choice == 1) {
+        sort(dishes.begin(), dishes.end(),
+             [](const Dish& a, const Dish& b) { return a.type < b.type; });
+    }
+    else if (choice == 2) {
+        sort(dishes.begin(), dishes.end(),
+             [](const Dish& a, const Dish& b) { return a.price < b.price; });
     }
     else {
-        sort(menu.begin(), menu.end(), [](auto& a, auto& b){
-            return a.price < b.price;
-        });
-        logResult("Меню отсортировано по цене.");
-    }
-
-    saveMenu(menu);
-    cout << "Сортировка выполнена.\n";
-}
-
-// === 4. Добавление блюда ===
-void addDish() {
-    Dish d;
-    cout << "Название: ";
-    getline(cin, d.name);
-
-    cout << "Тип: ";
-    getline(cin, d.type);
-
-    cout << "Цена: ";
-    cin >> d.price;
-    cin.ignore();
-
-    ofstream file("menu.txt", ios::app);
-    file << dishToString(d) << "\n";
-
-    cout << "Блюдо добавлено.\n";
-    logResult("Добавлено: " + dishToString(d));
-}
-
-// === 5. Фильтрация по цене ===
-void filterByPrice() {
-    cout << "Введите максимальную цену: ";
-    double maxPrice;
-    cin >> maxPrice;
-    cin.ignore();
-
-    auto menu = loadMenu();
-
-    cout << "\nБлюда с ценой <= " << maxPrice << ":\n";
-    logResult("Фильтр по цене <= " + to_string(maxPrice));
-
-    for (auto& d : menu) {
-        if (d.price <= maxPrice) {
-            string s = dishToString(d);
-            cout << s << endl;
-            logResult(s);
-        }
-    }
-}
-
-// === 6. Показ всего меню ===
-void showMenuFile() {
-    auto menu = loadMenu();
-
-    cout << "\n======= ВСЕ БЛЮДА В МЕНЮ =======\n";
-    logResult("Вывод всего меню:");
-
-    if (menu.empty()) {
-        cout << "Меню пустое!\n";
-        logResult("Меню пустое.");
+        cout << "Неверный выбор!\n";
         return;
     }
 
-    for (auto& d : menu) {
-        string s = dishToString(d);
-        cout << s << endl;
-        logResult(s);
-    }
+    writeMenu(filename, dishes);
+
+    ofstream out(outputFile, ios::app);
+    out << "Сортировка выполнена.\n";
+
+    cout << "Сортировка завершена.\n";
 }
 
-// === Главное меню программы ===
-void menu() {
-    while (true) {
-        cout << "\n===== МЕНЮ ПРОГРАММЫ =====\n"
-             << "1. Создать menu.txt\n"
-             << "2. Поиск блюда\n"
-             << "3. Сортировка меню\n"
-             << "4. Добавить блюдо\n"
-             << "5. Выборка по цене\n"
-             << "6. Показать всё меню\n"
-             << "0. Выход\n"
-             << "Выбор: ";
+// ------------------------------------------------------------
+// 4. Добавление нового блюда
+// ------------------------------------------------------------
+void addDish(const string& filename) {
+    ofstream out(filename, ios::app);
+    Dish d;
 
-        int cmd;
-        cin >> cmd;
-        cin.ignore();
+    cout << "Введите название: ";
+    getline(cin, d.name);
 
-        switch (cmd) {
-            case 1: createMenuFile(); break;
-            case 2: searchDish(); break;
-            case 3: sortMenu(); break;
-            case 4: addDish(); break;
-            case 5: filterByPrice(); break;
-            case 6: showMenuFile(); break;
-            case 0: return;
-            default: cout << "Неверная команда!\n";
+    cout << "Введите тип блюда: ";
+    getline(cin, d.type);
+
+    cout << "Введите цену: ";
+    cin >> d.price;
+    cin.ignore();
+
+    out << d.name << "\n" << d.type << "\n" << d.price << "\n";
+
+    cout << "Блюдо успешно добавлено.\n";
+}
+
+// ------------------------------------------------------------
+// 5. Вывод блюд по максимальной цене
+// ------------------------------------------------------------
+void filterByPrice(const string& filename, const string& outputFile) {
+    vector<Dish> dishes = readMenu(filename);
+    double maxPrice;
+
+    cout << "Введите максимальную цену: ";
+    cin >> maxPrice;
+    cin.ignore();
+
+    ofstream out(outputFile, ios::app);
+
+    cout << "\nБлюда с ценой ≤ " << maxPrice << ":\n";
+    out << "\nБлюда с ценой ≤ " << maxPrice << ":\n";
+
+    for (const auto& d : dishes) {
+        if (d.price <= maxPrice) {
+            cout << d.name << " — " << d.type << " — " << d.price << "\n";
+            out << d.name << " — " << d.type << " — " << d.price << "\n";
         }
     }
 }
 
-int main() {
-    // ЛУЧШИЙ ВАРИАНТ ДЛЯ WINDOWS (поддержка русского)
-    system("chcp 1251 > nul");
-    SetConsoleCP(1251);
-    SetConsoleOutputCP(1251);
+// ------------------------------------------------------------
+// 6. Вывод всего меню
+// ------------------------------------------------------------
+void showAllMenu(const string& filename) {
+    vector<Dish> dishes = readMenu(filename);
 
-    menu();
+    if (dishes.empty()) {
+        cout << "Меню пусто.\n";
+        return;
+    }
+
+    cout << "\n===== ВСЕ БЛЮДА МЕНЮ =====\n";
+    for (const auto& d : dishes) {
+        cout << "Название: " << d.name << "\n"
+             << "Тип: " << d.type << "\n"
+             << "Цена: " << d.price << "\n\n";
+    }
+}
+
+// ------------------------------------------------------------
+// Главное меню программы
+// ------------------------------------------------------------
+int main() {
+    setlocale(LC_ALL, "Russian");
+
+    const string menuFile = "menu.txt";
+    const string outputFile = "output.txt";
+
+    int choice;
+
+    do {
+        cout << "\n===== МЕНЮ ПРОГРАММЫ =====\n";
+        cout << "1. Создать файл и заполнить\n";
+        cout << "2. Найти блюдо по названию\n";
+        cout << "3. Отсортировать блюда\n";
+        cout << "4. Добавить блюдо\n";
+        cout << "5. Вывести блюда по максимальной цене\n";
+        cout << "6. Показать всё меню\n";
+        cout << "0. Выход\n";
+        cout << "Ваш выбор: ";
+
+        cin >> choice;
+        cin.ignore();
+
+        switch (choice) {
+            case 1: createFile(menuFile); break;
+            case 2: searchDish(menuFile, outputFile); break;
+            case 3: sortMenu(menuFile, outputFile); break;
+            case 4: addDish(menuFile); break;
+            case 5: filterByPrice(menuFile, outputFile); break;
+            case 6: showAllMenu(menuFile); break;
+            case 0: cout << "Выход из программы...\n"; break;
+            default: cout << "Неверный ввод! Повторите.\n";
+        }
+
+    } while (choice != 0);
+
     return 0;
 }
